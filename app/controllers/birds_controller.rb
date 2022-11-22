@@ -1,5 +1,6 @@
 class BirdsController < ApplicationController
-
+  #>>>>>>>>>>>>>>THIS LINE DOWN HERE WILL HANDLE AL THE  render_not_found_response BELOW
+rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
   # GET /birds
   def index
     birds = Bird.all
@@ -14,45 +15,39 @@ class BirdsController < ApplicationController
 
   # GET /birds/:id
   def show
-    bird = Bird.find_by(id: params[:id])
-    if bird
-      render json: bird
-    else
-      render json: { error: "Bird not found" }, status: :not_found
-    end
+    bird =find_bird
+    render json: bird
+  # rescue ActiveRecord::RecordNotFound
+  #       render_not_found_response
   end
 
   # PATCH /birds/:id
   def update
-    bird = Bird.find_by(id: params[:id])
-    if bird
-      bird.update(bird_params)
-      render json: bird
-    else
-      render json: { error: "Bird not found" }, status: :not_found
-    end
+    bird = find_bird
+    bird.update(bird_params)
+    render json: bird
+  # rescue ActiveRecord::RecordNotFound
+  #   render_not_found_response
+   
   end
 
   # PATCH /birds/:id/like
   def increment_likes
-    bird = Bird.find_by(id: params[:id])
-    if bird
+    bird = find_bird
       bird.update(likes: bird.likes + 1)
       render json: bird
-    else
-      render json: { error: "Bird not found" }, status: :not_found
-    end
+    # rescue ActiveRecord::RecordNotFound
+    #   render_not_found_response
+
   end
 
   # DELETE /birds/:id
   def destroy
-    bird = Bird.find_by(id: params[:id])
-    if bird
-      bird.destroy
-      head :no_content
-    else
-      render json: { error: "Bird not found" }, status: :not_found
-    end
+    bird = find_bird
+    bird.destroy
+    head :no_content
+  # rescue ActiveRecord::RecordNotFound
+  #   render_not_found_response
   end
 
   private
@@ -61,4 +56,12 @@ class BirdsController < ApplicationController
     params.permit(:name, :species, :likes)
   end
 
+  def render_not_found_response
+    render json: { error: "Bird not found" }, status: :not_found
+  end
+
+  def find_bird
+    #find_by returns nil while thsi returns an active record json thig
+    Bird.find(params[:id])
+  end
 end
